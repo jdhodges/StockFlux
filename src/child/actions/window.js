@@ -74,6 +74,16 @@ export function resizeError() {
     };
 }
 
+export function windowClosed() {
+    return (dispatch, getState) => {
+        if (Object.keys(getState()).filter(key => key !== 'closedWindows').length === 1) {
+            currentWindowService.getCurrentWindow().contentWindow.parent.close();
+        } else {
+            dispatch(close());
+        }
+    };
+}
+
 export function resizeToCompact() {
     return dispatch => {
         dispatch(resizing());

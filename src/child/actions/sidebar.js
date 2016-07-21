@@ -1,6 +1,8 @@
 import { SIDEBAR as ACTION_TYPES } from '../constants/actionTypes.js';
 import { search as quandlServiceSearch } from '../services/QuandlService.js';
 import currentWindowService from '../services/currentWindowService';
+import configService from '../../shared/ConfigService';
+// import { createChildWindow } from '../../parent/parent.js';
 
 export function searchInput(term) {
     return {
@@ -81,7 +83,7 @@ export function dragEnd() {
     };
 }
 
-export function reopenWindow(reopenWindowName) {
+function windowReopened(reopenWindowName) {
     return {
         windowName: currentWindowService.getCurrentWindow().name,
         type: ACTION_TYPES.REOPEN_WINDOW,
@@ -118,6 +120,49 @@ function searchError() {
         windowName: currentWindowService.getCurrentWindow().name,
         type: ACTION_TYPES.SEARCH_ERROR
     };
+}
+
+function openWindowError() {
+    return {
+        windowName: currentWindowService.getCurrentWindow().name,
+        type: ACTION_TYPES.OPEN_WINDOW_ERROR
+    };
+}
+
+function createChildWindow(windowName) {
+    return dispatch => {
+        const childWindow = new fin.desktop.Window(
+            configService.getWindowConfig(windowName),
+            () => childWindow.show(
+                false,
+                () => {},
+                () => dispatch(openWindowError())
+            ),
+            () => dispatch(openWindowError())
+        );
+    };
+}
+
+function reopenChildWindow(windowName) {
+    return dispatch => {
+        const childWindow = new fin.desktop.Window(
+            configService.getWindowConfig(windowName),
+            () => childWindow.show(
+                false,
+                () => dispatch(windowReopened(windowName)),
+                () => dispatch(openWindowError())
+            ),
+            () => dispatch(openWindowError())
+        );
+    };
+}
+
+export function openWindow(windowName) {
+    return dispatch => dispatch(createChildWindow(windowName));
+}
+
+export function reopenWindow(windowName) {
+    return dispatch => dispatch(reopenChildWindow(windowName));
 }
 
 export function search(term) {

@@ -6,8 +6,6 @@ import Search from './search/Search.js';
 
 import { selectFavourites, selectSearch, toggleFavourite, selectStock, unselectStock, reopenWindow } from '../../actions/sidebar';
 
-import configService from '../../../shared/ConfigService';
-
 class Sidebar extends Component {
     constructor(props) {
         super(props);
@@ -51,20 +49,12 @@ class Sidebar extends Component {
         }
     }
 
-    openWindow() {
-        console.log('hit');
-        // this.props.dispatch(reopenWindow(this.props.unopenedWindows[0]));
-
-        // console.log(this.props.unopenedWindows);
-
-        // const childWindow = new fin.desktop.Window(
-        //     configService.getWindowConfig(this.props.unopenedWindows[0]),
-        //     () => childWindow.show()
-        // );
+    openWindow(windowName) {
+        this.props.dispatch(reopenWindow(windowName));
     }
 
     render() {
-        const { sidebar } = this.props;
+        const { sidebar, unopenedWindows } = this.props;
 
         let bindings = {
             toggleFavourite: this.toggleFavourite,
@@ -83,9 +73,8 @@ class Sidebar extends Component {
                 <div className={`favourites ${sidebar.showFavourites ? 'expanded' : 'contracted'}`} onClick={this.focusFav}>
                     <Favourites bindings={bindings} />
                 </div>
-
                 <div className="closed-window-selection">
-                    <ClosedWindows bindings={bindings} />
+                    {unopenedWindows.length ? <ClosedWindows bindings={bindings} /> : null}
                 </div>
             </div>
         );
@@ -96,12 +85,13 @@ Sidebar.propTypes = {
     sidebar: PropTypes.object.isRequired,
     windowState: PropTypes.object.isRequired,
     selection: PropTypes.object.isRequired,
-    favourites: PropTypes.object.isRequired
+    favourites: PropTypes.object.isRequired,
+    unopenedWindows: PropTypes.array.isRequired
 };
 
 function mapStateToProps(state) {
     const { sidebar, selection, favourites, windowState } = state[fin.desktop.Window.getCurrent().contentWindow.name];
-    const unopenedWindows = state.closedWindows ? Object.keys(state.closedWindows) : null;
+    const unopenedWindows = state.closedWindows ? Object.keys(state.closedWindows) : [];
     return { sidebar, selection, favourites, windowState, unopenedWindows };
 }
 export default connect(mapStateToProps)(Sidebar);

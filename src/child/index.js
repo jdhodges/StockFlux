@@ -3,8 +3,9 @@ import { Provider } from 'react-redux';
 import { render, unmountComponentAtNode } from 'react-dom';
 import App from './containers/App';
 import 'babel-polyfill';
+import $ from 'jquery';
 
-import { open, close } from './actions/window';
+import { open, windowClosed } from './actions/window';
 
 import './assets/styles/style.less';
 import '../../node_modules/d3fc/dist/d3fc.min.css';
@@ -20,13 +21,15 @@ require('script!../../node_modules/BitFlux/dist/bitflux.js');
 /* eslint-enable import/no-unresolved */
 
 fin.desktop.main(() => {
-    fin.desktop.Window.getCurrent().contentWindow.addEventListener('beforeunload', () => {
-        fin.desktop.Window.getCurrent().contentWindow.opener.store.dispatch(close());
+    const store = fin.desktop.Window.getCurrent().contentWindow.opener.store;
+    $(window).unload(() => {        // eslint-disable-line no-undef
+        store.dispatch(windowClosed());
         unmountComponentAtNode(document.getElementById('app'));
     });
 
-    const store = fin.desktop.Window.getCurrent().contentWindow.opener.store;
     window.store = store;
+    window.parent = window.opener.parent;
+
     store.dispatch(open());
 
     render(

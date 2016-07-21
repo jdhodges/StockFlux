@@ -10,11 +10,15 @@ function parentReducer(state = {}, action) {
     case ACTION_TYPES.CHILD_CLOSED: {
         const newState = Object.assign({}, state);
 
+        const newClosedWindow = Object.assign({}, newState[action.windowName], {
+            date: Date.now()
+        });
+
         if (newState.closedWindows) {
-            newState.closedWindows[action.windowName] = newState[action.windowName];
+            newState.closedWindows[action.windowName] = newClosedWindow;
         } else {
             newState.closedWindows = {
-                [action.windowName]: newState[action.windowName]
+                [action.windowName]: newClosedWindow
             };
         }
 
